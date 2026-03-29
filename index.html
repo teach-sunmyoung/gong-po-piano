@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공포 학교의 피아노 괴담</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nosifer&family=Noto+Sans+KR:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #050505;
+            color: #d1d5db;
+            overflow-x: hidden;
+            transition: background-color 0.5s;
+        }
+
+        /* 거친 노이즈 효과 배경 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+            opacity: 0.2;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .horror-title {
+            font-family: 'Nosifer', cursive;
+            color: #991b1b;
+            text-shadow: 0 0 10px #ff0000;
+            animation: flicker 3s infinite;
+        }
+
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+            20%, 24%, 55% { opacity: 0.4; }
+        }
+
+        .piano-outer {
+            position: relative;
+            padding: 60px 20px;
+            margin-top: 40px;
+        }
+
+        .piano-container {
+            perspective: 1000px;
+            filter: sepia(0.3) contrast(1.1) brightness(0.9);
+            display: flex;
+            position: relative;
+            z-index: 20;
+        }
+
+        .key {
+            cursor: pointer;
+            transition: all 0.1s ease;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 건반 피자국 효과 */
+        .key::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle at 30% 20%, rgba(153, 27, 27, 0.4) 0%, transparent 40%),
+                              radial-gradient(circle at 70% 60%, rgba(127, 29, 29, 0.3) 0%, transparent 50%);
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .white-key {
+            width: 55px;
+            height: 200px;
+            background: #d1d5db;
+            border: 2px solid #1e293b;
+            border-radius: 0 0 4px 4px;
+            z-index: 1;
+            box-shadow: inset 0 -10px 20px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
+            font-weight: bold;
+            color: rgba(0,0,0,0.4);
+            font-size: 0.75rem;
+        }
+
+        .white-key:active, .white-key.active {
+            background: #94a3b8;
+            height: 195px;
+            box-shadow: inset 0 5px 30px rgba(153, 27, 27, 0.6);
+            color: #7f1d1d;
+        }
+
+        .black-key {
+            width: 34px;
+            height: 120px;
+            background: #0a0a0a;
+            border: 1px solid #334155;
+            border-radius: 0 0 2px 2px;
+            position: absolute;
+            margin-left: -17px;
+            z-index: 2;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 8px;
+            color: rgba(255,255,255,0.2);
+            font-size: 0.6rem;
+        }
+
+        .black-key:active, .black-key.active {
+            background: #450a0a;
+            height: 115px;
+            box-shadow: 0 0 15px rgba(255,0,0,0.3);
+        }
+
+        /* 해골 손 스타일 강화 */
+        .ghost-hand {
+            position: absolute;
+            bottom: 40px;
+            width: 80px;
+            height: 180px;
+            z-index: 30;
+            opacity: 0;
+            pointer-events: none;
+            transform-origin: bottom center;
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3)) grayscale(1) brightness(1.2);
+        }
+
+        @keyframes skeleton-rise {
+            0% { transform: translateY(150px) scaleY(0.8) rotate(0deg); opacity: 0; }
+            10% { transform: translateY(0) scaleY(1.1) rotate(-10deg); opacity: 1; }
+            20% { transform: translateY(-30px) scaleY(1) rotate(10deg); opacity: 1; }
+            30% { transform: translateY(-25px) rotate(-5deg); opacity: 1; }
+            40% { transform: translateY(-35px) rotate(5deg); opacity: 1; }
+            80% { transform: translateY(-10px) rotate(0deg); opacity: 0.8; }
+            100% { transform: translateY(250px); opacity: 0; }
+        }
+
+        .hand-active {
+            animation: skeleton-rise 4s cubic-bezier(0.19, 1, 0.22, 1) forwards !important;
+        }
+
+        .letter-slot {
+            width: 50px;
+            height: 60px;
+            border-bottom: 3px solid #7f1d1d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0 8px;
+            color: #991b1b;
+            text-shadow: 0 0 5px rgba(255,0,0,0.5);
+        }
+
+        .letter-slot.filled {
+            animation: blood-drip 0.5s ease-out forwards;
+        }
+
+        @keyframes blood-drip {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 2rem 4rem;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #7f1d1d;
+            box-shadow: 0 0 60px rgba(127, 29, 29, 0.9);
+            z-index: 200;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .blood-btn {
+            background: linear-gradient(to bottom, #7f1d1d, #450a0a);
+            border: 1px solid #991b1b;
+            box-shadow: 0 4px 0 #2d0606;
+            transition: all 0.2s;
+        }
+
+        .blood-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #2d0606;
+        }
+
+        .vignette {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 30%, black 140%);
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .jump-scare-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(153, 27, 27, 0.5);
+            z-index: 300;
+            display: none;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-12 px-4">
+    <div class="vignette"></div>
+    <div id="scare-overlay" class="jump-scare-overlay"></div>
+    <div id="message" class="message-box text-red-600 text-3xl italic"></div>
+
+    <header class="text-center mb-12 relative z-20">
+        <h1 class="horror-title text-5xl mb-4">음악실의 원혼</h1>
+        <p class="text-slate-500 text-lg italic">"그날 밤, 피 묻은 건반이 스스로 울리기 시작했다..."</p>
+    </header>
+
+    <!-- 퀴즈 디스플레이 -->
+    <div class="bg-zinc-900/80 p-10 rounded-lg border-2 border-red-900/30 w-full max-w-2xl mb-12 text-center relative z-20 backdrop-blur-sm">
+        <div class="flex flex-col items-center mb-8">
+            <button id="play-quiz-btn" onclick="playCurrentSequence()" class="blood-btn text-white px-10 py-5 rounded font-bold text-xl flex items-center gap-3 transition-all hover:brightness-125">
+                <span>🔊 원혼의 속삭임 듣기</span>
+            </button>
+            <p id="status-text" class="mt-4 text-red-900 font-bold uppercase tracking-widest text-sm">실패할수록... 그들이 다가온다</p>
+            <div id="fail-counter" class="text-red-600 text-xs mt-2 tracking-tighter">남은 기회: <span id="fail-count-display">3</span></div>
+        </div>
+        
+        <div class="flex justify-center mb-6" id="word-slots">
+            <!-- 슬롯 동적 생성 -->
+        </div>
+        <div id="meaning-hint" class="text-red-800 h-6 italic text-sm mb-4 font-bold"></div>
+    </div>
+
+    <!-- 피아노 컨테이너 -->
+    <div class="piano-outer">
+        <div id="ghost-hands-container" class="absolute inset-0 pointer-events-none"></div>
+        
+        <div id="main-piano" class="piano-container p-6 bg-stone-950 rounded-md border-t-8 border-stone-900 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.8)]">
+            <div class="key white-key" data-note="C">C</div>
+            <div class="key black-key" data-note="C#" style="left: 61px;">C#</div>
+            <div class="key white-key" data-note="D">D</div>
+            <div class="key black-key" data-note="D#" style="left: 116px;">D#</div>
+            <div class="key white-key" data-note="E">E</div>
+            
+            <div class="key white-key" data-note="F">F</div>
+            <div class="key black-key" data-note="F#" style="left: 226px;">F#</div>
+            <div class="key white-key" data-note="G">G</div>
+            <div class="key black-key" data-note="G#" style="left: 281px;">G#</div>
+            <div class="key white-key" data-note="A">A</div>
+            <div class="key black-key" data-note="A#" style="left: 336px;">A#</div>
+            <div class="key white-key" data-note="B">B</div>
+            
+            <div class="key white-key" data-note="C2">C</div>
+        </div>
+    </div>
+
+    <div class="max-w-2xl w-full text-center relative z-20 mt-8">
+        <button onclick="resetGame()" class="text-red-900 border border-red-900 px-6 py-2 rounded hover:bg-red-950 transition-colors font-bold text-xs uppercase tracking-widest">저주 초기화</button>
+    </div>
+
+    <script>
+        const words = [
+            { answer: ["C", "A", "F", "E"], meaning: "저주받은 카페..." },
+            { answer: ["F", "A", "C", "E"], meaning: "누군가의 얼굴이 창문에..." },
+            { answer: ["B", "E", "D"], meaning: "침대 밑을 보지 마..." },
+            { answer: ["D", "E", "A", "D"], meaning: "이미 죽어있는..." },
+            { answer: ["B", "A", "D", "G", "E"], meaning: "피로 물든 휘장..." }
+        ];
+
+        let currentWordIndex = 0;
+        let userInput = [];
+        let isPlayingSequence = false;
+        let audioCtx = null;
+        let failCount = 0;
+        const maxFails = 3;
+
+        const slotsEl = document.getElementById('word-slots');
+        const messageEl = document.getElementById('message');
+        const statusEl = document.getElementById('status-text');
+        const hintEl = document.getElementById('meaning-hint');
+        const playBtn = document.getElementById('play-quiz-btn');
+        const failDisplay = document.getElementById('fail-count-display');
+        const scareOverlay = document.getElementById('scare-overlay');
+        const handsContainer = document.getElementById('ghost-hands-container');
+
+        // 해골 손 SVG 생성 (더욱 정교하고 공포스러운 뼈 디자인)
+        function createSkeletonHand(leftPos) {
+            const hand = document.createElement('div');
+            hand.className = 'ghost-hand';
+            hand.style.left = leftPos + 'px';
+            hand.innerHTML = `
+                <svg viewBox="0 0 100 250" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 손목 뼈 -->
+                    <rect x="42" y="180" width="16" height="70" rx="8" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+                    
+                    <!-- 손등 뼈 -->
+                    <path d="M35 180 Q50 160 65 180 L60 140 Q50 130 40 140 Z" fill="#cbd5e1" stroke="#64748b" stroke-width="1"/>
+
+                    <!-- 엄지 -->
+                    <path d="M35 160 L15 140 L10 125" fill="none" stroke="#e2e8f0" stroke-width="6" stroke-linecap="round"/>
+                    
+                    <!-- 검지 -->
+                    <path d="M40 140 L35 100 L30 70 L32 40" fill="none" stroke="#f1f5f9" stroke-width="5" stroke-linecap="round"/>
+                    
+                    <!-- 중지 -->
+                    <path d="M50 135 L50 90 L50 50 L50 20" fill="none" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+                    
+                    <!-- 약지 -->
+                    <path d="M60 140 L65 100 L70 75 L68 45" fill="none" stroke="#f1f5f9" stroke-width="5" stroke-linecap="round"/>
+                    
+                    <!-- 소지 -->
+                    <path d="M65 160 L85 140 L90 110" fill="none" stroke="#e2e8f0" stroke-width="4" stroke-linecap="round"/>
+
+                    <!-- 뼈 마디 강조 -->
+                    <circle cx="32" cy="40" r="3" fill="#94a3b8"/>
+                    <circle cx="50" cy="20" r="3" fill="#94a3b8"/>
+                    <circle cx="68" cy="45" r="3" fill="#94a3b8"/>
+                </svg>
+            `;
+            return hand;
+        }
+
+        function setupGhostHands() {
+            handsContainer.innerHTML = '';
+            const whiteKeys = document.querySelectorAll('.white-key');
+            const containerRect = handsContainer.getBoundingClientRect();
+            
+            whiteKeys.forEach((key) => {
+                const keyRect = key.getBoundingClientRect();
+                const relativeLeft = keyRect.left - containerRect.left + (keyRect.width / 2) - 40;
+                const hand = createSkeletonHand(relativeLeft);
+                handsContainer.appendChild(hand);
+            });
+        }
+
+        window.addEventListener('load', () => setTimeout(setupGhostHands, 500));
+        window.addEventListener('resize', setupGhostHands);
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playNote(note, duration = 1.2) {
+            initAudio();
+            const frequencies = {
+                'C': 261.63, 'C#': 277.18, 'D': 293.66, 'D#': 311.13, 
+                'E': 329.63, 'F': 349.23, 'F#': 369.99, 'G': 392.00, 
+                'G#': 415.30, 'A': 440.00, 'A#': 466.16, 'B': 493.88, 'C2': 523.25
+            };
+            const freq = frequencies[note.replace('2','')] || frequencies['C'];
+            const startTime = audioCtx.currentTime;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, startTime);
+            
+            gain.gain.setValueAtTime(0, startTime);
+            gain.gain.linearRampToValueAtTime(0.3, startTime + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(startTime);
+            osc.stop(startTime + duration);
+        }
+
+        function playGhostScream() {
+            initAudio();
+            const startTime = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(50, startTime);
+            osc.frequency.exponentialRampToValueAtTime(1500, startTime + 0.2);
+            osc.frequency.exponentialRampToValueAtTime(80, startTime + 2);
+
+            gain.gain.setValueAtTime(0, startTime);
+            gain.gain.linearRampToValueAtTime(0.8, startTime + 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 2.5);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(startTime);
+            osc.stop(startTime + 3);
+        }
+
+        async function playCurrentSequence() {
+            if (isPlayingSequence) return;
+            isPlayingSequence = true;
+            playBtn.disabled = true;
+            statusEl.textContent = "죽은 자의 속삭임을 들어라...";
+            
+            const sequence = words[currentWordIndex].answer;
+            userInput = [];
+            Array.from(slotsEl.children).forEach(slot => { slot.textContent = ''; slot.classList.remove('filled'); });
+
+            for (let note of sequence) {
+                playNote(note, 1.5);
+                const el = document.querySelector(`[data-note="${note}"]`);
+                if(el) el.classList.add('active');
+                await new Promise(r => setTimeout(r, 1000));
+                if(el) el.classList.remove('active');
+                await new Promise(r => setTimeout(r, 200));
+            }
+
+            statusEl.textContent = "연주해... 틀리면 끝장이다...";
+            isPlayingSequence = false;
+            playBtn.disabled = false;
+        }
+
+        function triggerJumpScare() {
+            setupGhostHands();
+            playGhostScream();
+            scareOverlay.style.display = 'block';
+            document.body.style.backgroundColor = '#2d0606';
+            
+            const hands = document.querySelectorAll('.ghost-hand');
+            hands.forEach((hand, idx) => {
+                hand.classList.remove('hand-active');
+                void hand.offsetWidth; 
+                setTimeout(() => {
+                    hand.classList.add('hand-active');
+                }, idx * 100);
+            });
+
+            setTimeout(() => {
+                scareOverlay.style.display = 'none';
+                document.body.style.backgroundColor = '#050505';
+            }, 4000);
+        }
+
+        function showMessage(text, isScare = false) {
+            messageEl.textContent = text;
+            messageEl.style.display = 'block';
+            if(isScare) {
+                messageEl.style.color = '#ff0000';
+                messageEl.style.fontSize = '4rem';
+                document.body.style.animation = 'flicker 0.1s infinite';
+            }
+            
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+                document.body.style.animation = 'none';
+                if(!isScare) messageEl.style.fontSize = '3rem';
+            }, 2500);
+        }
+
+        function loadQuiz() {
+            const quiz = words[currentWordIndex];
+            slotsEl.innerHTML = '';
+            hintEl.textContent = '';
+            userInput = [];
+            failDisplay.textContent = (maxFails - failCount);
+            
+            quiz.answer.forEach(() => {
+                const slot = document.createElement('div');
+                slot.className = 'letter-slot';
+                slotsEl.appendChild(slot);
+            });
+        }
+
+        function handleInput(note) {
+            if (isPlayingSequence) return;
+            
+            const cleanNote = note.replace('2', '');
+            const quiz = words[currentWordIndex];
+            const currentIndex = userInput.length;
+
+            if (quiz.answer[currentIndex] === cleanNote) {
+                userInput.push(cleanNote);
+                const slot = slotsEl.children[currentIndex];
+                slot.textContent = cleanNote;
+                slot.classList.add('filled');
+                
+                if (userInput.length === quiz.answer.length) {
+                    hintEl.textContent = quiz.meaning;
+                    showMessage("아직은 살아있군...");
+                    setTimeout(() => {
+                        currentWordIndex = (currentWordIndex + 1) % words.length;
+                        loadQuiz();
+                    }, 2500);
+                }
+            } else {
+                failCount++;
+                failDisplay.textContent = Math.max(0, maxFails - failCount);
+
+                if (failCount >= maxFails) {
+                    triggerJumpScare();
+                    showMessage("뼈가 너를 부른다!", true);
+                    failCount = 0;
+                } else {
+                    showMessage("틀렸어... 크크크...");
+                }
+
+                userInput = [];
+                Array.from(slotsEl.children).forEach(slot => { slot.textContent = ''; slot.classList.remove('filled'); });
+            }
+        }
+
+        function resetGame() {
+            currentWordIndex = 0;
+            failCount = 0;
+            loadQuiz();
+            showMessage("운명이 다시 쓰여진다...");
+        }
+
+        document.querySelectorAll('.key').forEach(key => {
+            const action = (e) => {
+                if(e.type === 'touchstart') e.preventDefault();
+                if (isPlayingSequence) return;
+                const note = key.dataset.note;
+                playNote(note);
+                handleInput(note);
+                key.classList.add('active');
+            };
+            key.addEventListener('mousedown', action);
+            key.addEventListener('touchstart', action);
+            ['mouseup', 'mouseleave', 'touchend'].forEach(evt => {
+                key.addEventListener(evt, () => key.classList.remove('active'));
+            });
+        });
+
+        loadQuiz();
+    </script>
+</body>
+</html>
